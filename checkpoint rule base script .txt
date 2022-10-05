@@ -1,0 +1,59 @@
+
+Jamie Munford 
+
+
+#!/bin/sh
+
+# Variables
+# TMP_OUTPUT is the file to store temporary output
+# RECIPIENTS is a list of email recipients
+
+TMP_OUTPUT=/tmp/fw_rule_check.tmp
+RECIPIENTS=user@example.com
+
+# Remove the temporary output file if it exists
+[ -f $TMP_OUTPUT ] && rm $TMP_OUTPUT
+
+/usr/bin/echo "Starting time: `date`\n" >> $TMP_OUTPUT
+/usr/bin/echo "Rule\tCount" >> $TMP_OUTPUT
+/usr/bin/echo "----\t-----" >> $TMP_OUTPUT
+
+# For every line returned by "fw log," count the rule.
+# The "rule (number)" is not in the same place on every line, so Perl
+# is used to extract the rule.
+/opt/CKPfw/bin/fw log | /usr/bin/perl -ne 'print "$1\n" if /rule\s(\d+)/' | \
+   /usr/bin/sort -n | /usr/bin/uniq -c | /usr/bin/awk '{print $2 "\t" $1}' >> $TMP_OUTPUT
+
+/usr/bin/echo "\nEnding time: `date`" >> $TMP_OUTPUT
+
+/usr/bin/mailx -s "Firewall rule check" $RECIPIENTS < $TMP_OUTPUT
+
+rm $TMP_OUTPUT
+
+Example output:
+
+Starting time: Sat Dec  7 22:00:00 CST 2008
+
+Rule    Count
+----    -----
+0       147262
+2       1
+4       886295
+6       19650
+7       13993
+8       13160
+11      142
+12      3741
+14      5114
+20      8
+28      33
+40      1878
+41      505
+52      162
+53      3
+54      3
+56      40
+57      88
+58      28502
+59      258141
+60      106993
